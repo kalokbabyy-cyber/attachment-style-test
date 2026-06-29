@@ -2,7 +2,7 @@
 
 import { Lock, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { type MouseEvent, useEffect, useState } from "react";
 import { LanguageSwitcher, useLocale } from "@/components/LanguageSwitcher";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -40,24 +40,20 @@ export default function ResultPage() {
     setIsLoading(false);
   }, []);
 
-  async function unlockReport() {
-    console.log("Checkout click received:", { hasResult: Boolean(result), isCheckingOut });
-
-    if (!result) {
-      setError("Your quiz result is missing. Please retake the test.");
-      return;
-    }
-
+  async function unlockReport(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log("BUTTON CLICK");
     setError("");
     setIsCheckingOut(true);
 
     try {
-      console.log("Checkout request starting:", "/api/checkout");
+      console.log("before fetch");
 
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...result, locale })
+        body: JSON.stringify(result ? { ...result, locale } : { locale })
       });
       const data = await response.json();
 
