@@ -14,16 +14,13 @@ export async function POST(request: Request) {
   const baseUrl = getBaseUrl(origin);
   const answerCodes = serializeAnswerCodes(body.answers);
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-  const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-  const missingStripeConfig = [
-    !stripeSecretKey ? "STRIPE_SECRET_KEY" : "",
-    !stripePublishableKey ? "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" : ""
-  ].filter(Boolean);
 
-  if (missingStripeConfig.length > 0) {
+  console.log("STRIPE_SECRET_KEY exists:", !!process.env.STRIPE_SECRET_KEY);
+
+  if (!stripeSecretKey) {
     if (process.env.NODE_ENV === "production") {
       return NextResponse.json(
-        { error: `Stripe is not configured. Add ${missingStripeConfig.join(", ")} to your environment.` },
+        { error: "Stripe is not configured. Add STRIPE_SECRET_KEY to your environment." },
         { status: 500 }
       );
     }
@@ -32,10 +29,6 @@ export async function POST(request: Request) {
       url: `${baseUrl}/report?demo=1`,
       demo: true
     });
-  }
-
-  if (!stripeSecretKey) {
-    return NextResponse.json({ error: "Stripe secret key is missing." }, { status: 500 });
   }
 
   const stripe = new Stripe(stripeSecretKey);

@@ -179,10 +179,7 @@ async function main() {
     });
 
     const checkoutUrl = checkout.json?.url || "";
-    const missingStripeKeys = [
-      !env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" : "",
-      !env.STRIPE_SECRET_KEY ? "STRIPE_SECRET_KEY" : ""
-    ].filter(Boolean);
+    const missingStripeKeys = [!env.STRIPE_SECRET_KEY ? "STRIPE_SECRET_KEY" : ""].filter(Boolean);
 
     if (missingStripeKeys.length > 0) {
       const failedClosed = checkout.statusCode === 500 && /Stripe is not configured/i.test(checkout.body);

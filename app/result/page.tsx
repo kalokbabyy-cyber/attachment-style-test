@@ -25,8 +25,6 @@ const lockedItems = [
   "A daily affirmation that does not sound like a fridge magnet"
 ];
 
-const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-
 export default function ResultPage() {
   const { locale, t } = useLocale();
   const [result, setResult] = useState<StoredQuizResult | null>(null);
@@ -49,10 +47,6 @@ export default function ResultPage() {
     setIsCheckingOut(true);
 
     try {
-      if (!stripePublishableKey) {
-        throw new Error("Stripe is not configured. Add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to your environment.");
-      }
-
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
