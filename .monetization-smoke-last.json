@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-06-29T04:42:07.924Z",
+  "baseUrl": "http://localhost:54418",
+  "config": {
+    "NEXT_PUBLIC_SITE_URL": "missing",
+    "STRIPE_SECRET_KEY": "missing",
+    "OPENAI_API_KEY": "missing",
+    "OPENAI_MODEL": "default"
+  },
+  "checks": [
+    {
+      "name": "production_build",
+      "status": "pass"
+    },
+    {
+      "name": "production_server_ready",
+      "status": "pass"
+    },
+    {
+      "name": "checkout_without_stripe_fails_closed",
+      "status": "pass",
+      "httpStatus": 500
+    }
+  ],
+  "status": "blocked_config",
+  "nextAction": "Add STRIPE_SECRET_KEY to .env.local, then rerun npm run monetization:smoke."
+}
