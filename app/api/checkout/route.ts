@@ -69,7 +69,9 @@ export async function POST(request: Request) {
     console.error("Checkout error:", error);
 
     return NextResponse.json(
-      { error: "Checkout could not be started." },
+      {
+        error: error instanceof Error ? error.stack : JSON.stringify(error)
+      },
       { status: 500 }
     );
   }
