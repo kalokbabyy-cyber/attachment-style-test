@@ -55,7 +55,7 @@ WATCHPACK_POLLING=true npm run dev
 
 ## Local Demo Checkout
 
-In local development, if `STRIPE_SECRET_KEY` is not set, clicking `Unlock Full Report - $4.99` returns a demo URL:
+In local development, if Stripe environment variables are not set, clicking `Unlock Full Report - CAD 9.99` returns a demo URL:
 
 ```text
 /report?demo=1
@@ -75,6 +75,7 @@ Then fill in:
 
 ```bash
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
 OPENAI_API_KEY=sk-your_openai_api_key
 OPENAI_MODEL=gpt-4o-mini
@@ -91,16 +92,16 @@ If `OPENAI_API_KEY` is missing, the app returns a built-in fallback report so th
 ## Configure Stripe
 
 1. Create or log in to your Stripe account.
-2. Copy your test secret key.
-3. Add it to `.env.local` as `STRIPE_SECRET_KEY`.
+2. Copy your test publishable key and test secret key.
+3. Add them to `.env.local` as `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and `STRIPE_SECRET_KEY`.
 4. Use Stripe test card `4242 4242 4242 4242` with any future expiry date and any CVC.
 
 Checkout price is defined in `app/api/checkout/route.ts`:
 
-- Currency: USD
-- Amount: `$4.99`
-- Success URL: `/report?session_id={CHECKOUT_SESSION_ID}`
-- Cancel URL: `/result`
+- Currency: CAD
+- Amount: `CAD 9.99`
+- Success URL: `/success?session_id={CHECKOUT_SESSION_ID}`
+- Cancel URL: `/cancel`
 
 When `STRIPE_SECRET_KEY` is set, `/api/report` verifies that the Checkout Session is paid before generating the full report.
 
@@ -109,8 +110,9 @@ For TikTok traffic:
 1. Put your site URL in the TikTok bio link.
 2. Users complete the quiz inside TikTok's in-app browser.
 3. Stripe Checkout opens securely.
-4. Stripe redirects back to `/report?session_id=...`.
-5. The report API verifies payment and can rebuild quiz answers from Stripe metadata if browser storage is missing.
+4. Stripe redirects back to `/success?session_id=...`.
+5. The success page links to `/report?session_id=...`.
+6. The report API verifies payment and can rebuild quiz answers from Stripe metadata if browser storage is missing.
 
 ## Multilingual Behavior
 
@@ -143,6 +145,7 @@ Users can also switch languages manually. The OpenAI report prompt includes the 
 
 ```bash
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_or_test_key
 STRIPE_SECRET_KEY=sk_live_or_test_key
 OPENAI_API_KEY=sk-your_openai_api_key
 OPENAI_MODEL=gpt-4o-mini

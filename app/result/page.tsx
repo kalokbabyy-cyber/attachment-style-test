@@ -25,6 +25,8 @@ const lockedItems = [
   "A daily affirmation that does not sound like a fridge magnet"
 ];
 
+const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+
 export default function ResultPage() {
   const { locale, t } = useLocale();
   const [result, setResult] = useState<StoredQuizResult | null>(null);
@@ -47,6 +49,10 @@ export default function ResultPage() {
     setIsCheckingOut(true);
 
     try {
+      if (!stripePublishableKey) {
+        throw new Error("Stripe is not configured. Add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to your environment.");
+      }
+
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -153,7 +159,7 @@ export default function ResultPage() {
                 <Lock aria-hidden="true" className="h-4 w-4" />
               </button>
               <p className="mt-3 text-xs leading-5 text-neutral-400">
-                Secure Stripe checkout. Works from TikTok in-app browser; payment success returns here automatically.
+                Secure Stripe checkout. Works from TikTok in-app browser; payment success returns to your report automatically.
               </p>
               {error ? <p className="mt-4 text-sm text-neutral-200">{error}</p> : null}
             </div>

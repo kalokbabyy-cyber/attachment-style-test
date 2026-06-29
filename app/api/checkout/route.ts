@@ -13,11 +13,17 @@ export async function POST(request: Request) {
   const origin = request.headers.get("origin");
   const baseUrl = getBaseUrl(origin);
   const answerCodes = serializeAnswerCodes(body.answers);
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+  const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  const missingStripeConfig = [
+    !stripeSecretKey ? "STRIPE_SECRET_KEY" : "",
+    !stripePublishableKey ? "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" : ""
+  ].filter(Boolean);
 
-  if (!process.env.STRIPE_SECRET_KEY) {
+  if (missingStripeConfig.length > 0) {
     if (process.env.NODE_ENV === "production") {
       return NextResponse.json(
-        { error: "Stripe is not configured. Add STRIPE_SECRET_KEY to your environment." },
+        { error: `Stripe is not configured. Add ${missingStripeConfig.join(", ")} to your environment.` },
         { status: 500 }
       );
     }
@@ -28,7 +34,11 @@ export async function POST(request: Request) {
     });
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  if (!stripeSecretKey) {
+    return NextResponse.json({ error: "Stripe secret key is missing." }, { status: 500 });
+  }
+
+  const stripe = new Stripe(stripeSecretKey);
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -37,8 +47,8 @@ export async function POST(request: Request) {
       {
         quantity: 1,
         price_data: {
-          currency: "usd",
-          unit_amount: 499,
+          currency: "cad",
+          unit_amount: 999,
           product_data: {
             name: "AI Attachment Test - Full Report",
             description: "Personalized AI attachment style report"
@@ -53,8 +63,8 @@ export async function POST(request: Request) {
       answerCodes,
       locale: body.locale || "en"
     },
-    success_url: `${baseUrl}/report?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/result`
+    success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl}/cancel`
   });
 
   return NextResponse.json({ url: session.url });

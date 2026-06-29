@@ -29,6 +29,13 @@ function readEnvFile(file) {
 function redactConfig(env) {
   return {
     NEXT_PUBLIC_SITE_URL: env.NEXT_PUBLIC_SITE_URL ? "present" : "missing",
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+      ? env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.startsWith("pk_test_")
+        ? "present_test"
+        : env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.startsWith("pk_live_")
+          ? "present_live"
+          : "present_unknown_prefix"
+      : "missing",
     STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY
       ? env.STRIPE_SECRET_KEY.startsWith("sk_test_")
         ? "present_test"
@@ -172,15 +179,21 @@ async function main() {
     });
 
     const checkoutUrl = checkout.json?.url || "";
-    if (!env.STRIPE_SECRET_KEY) {
+    const missingStripeKeys = [
+      !env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" : "",
+      !env.STRIPE_SECRET_KEY ? "STRIPE_SECRET_KEY" : ""
+    ].filter(Boolean);
+
+    if (missingStripeKeys.length > 0) {
       const failedClosed = checkout.statusCode === 500 && /Stripe is not configured/i.test(checkout.body);
       report.checks.push({
-        name: "checkout_without_stripe_fails_closed",
+        name: "checkout_without_stripe_config_fails_closed",
         status: failedClosed ? "pass" : "fail",
-        httpStatus: checkout.statusCode
+        httpStatus: checkout.statusCode,
+        missing: missingStripeKeys
       });
       report.status = "blocked_config";
-      report.nextAction = "Add STRIPE_SECRET_KEY to .env.local, then rerun npm run monetization:smoke.";
+      report.nextAction = `Add ${missingStripeKeys.join(", ")} to .env.local, then rerun npm run monetization:smoke.`;
     } else if (checkout.statusCode === 200 && /^https:\/\/checkout\.stripe\.com\//.test(checkoutUrl)) {
       report.checks.push({
         name: "stripe_checkout_url_created",
