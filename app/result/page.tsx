@@ -41,12 +41,19 @@ export default function ResultPage() {
   }, []);
 
   async function unlockReport() {
-    if (!result) return;
+    console.log("Checkout click received:", { hasResult: Boolean(result), isCheckingOut });
+
+    if (!result) {
+      setError("Your quiz result is missing. Please retake the test.");
+      return;
+    }
 
     setError("");
     setIsCheckingOut(true);
 
     try {
+      console.log("Checkout request starting:", "/api/checkout");
+
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
