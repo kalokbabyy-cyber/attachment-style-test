@@ -43,13 +43,10 @@ export default function ResultPage() {
   async function unlockReport(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     event.stopPropagation();
-    console.log("BUTTON CLICK");
     setError("");
     setIsCheckingOut(true);
 
     try {
-      console.log("before fetch");
-
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as Partial<StoredQuizResult>;
 
     if (!body.style || !body.answers?.length) {
-      return NextResponse.json({ error: "Quiz result is missing." }, { status: 400 });
+      return NextResponse.json({ error: "Checkout could not be started." }, { status: 400 });
     }
 
     const origin = request.headers.get("origin");
@@ -17,14 +17,10 @@ export async function POST(request: Request) {
     const answerCodes = serializeAnswerCodes(body.answers);
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
-    console.log("STRIPE_SECRET_KEY exists:", !!process.env.STRIPE_SECRET_KEY);
-    console.log("NEXT_PUBLIC_BASE_URL:", process.env.NEXT_PUBLIC_BASE_URL);
-    console.log("NEXT_PUBLIC_SITE_URL:", process.env.NEXT_PUBLIC_SITE_URL);
-
     if (!stripeSecretKey) {
       if (process.env.NODE_ENV === "production") {
         return NextResponse.json(
-          { error: "Stripe is not configured. Add STRIPE_SECRET_KEY to your environment." },
+          { error: "Checkout could not be started." },
           { status: 500 }
         );
       }
@@ -69,9 +65,7 @@ export async function POST(request: Request) {
     console.error("Checkout error:", error);
 
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.stack : JSON.stringify(error)
-      },
+      { error: "Checkout could not be started." },
       { status: 500 }
     );
   }
